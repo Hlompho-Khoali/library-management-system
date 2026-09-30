@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Register | Library Management System{% endblock %}
+
+{% block content %}
+<main class="registration-page">
+    <section class="registration-card">
+        <a href="{{ url_for('auth.home') }}" class="registration-back">Library Management System</a>
+        <h1>Create your account</h1>
+        <p class="registration-intro">Complete your details to begin identity verification.</p>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash-message {% if category == 'error' %}flash-error{% elif category == 'success' %}flash-success{% endif %}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" class="registration-form">
+            <fieldset>
+                <legend>Personal information</legend>
+                <div class="form-grid">
+                    <div class="form-group"><label for="title">Title</label><select id="title" name="title" autocomplete="honorific-prefix" required><option value="">Select title</option><option value="Mr">Mr</option><option value="Mrs">Mrs</option><option value="Ms">Ms</option><option value="Miss">Miss</option><option value="Dr">Dr</option><option value="Prof">Prof</option></select></div>
+                    <div class="form-group"><label for="first_name">First name</label><input type="text" id="first_name" name="first_name" autocomplete="given-name" required></div>
+                    <div class="form-group"><label for="middle_name">Middle name</label><input type="text" id="middle_name" name="middle_name" autocomplete="additional-name"></div>
+                    <div class="form-group"><label for="last_name">Last name</label><input type="text" id="last_name" name="last_name" autocomplete="family-name" required></div>
+                    <div class="form-group"><label for="id_number">ID number</label><input type="text" id="id_number" name="id_number" inputmode="numeric" maxlength="13" minlength="13" autocomplete="off" required></div>
+                    <div class="form-group"><label for="date_of_birth">Date of birth</label><input type="date" id="date_of_birth" name="date_of_birth" autocomplete="bday" readonly required></div>
+                    <div class="form-group"><label for="phone_number">Phone number</label><input type="tel" id="phone_number" name="phone_number" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" minlength="10" autocomplete="tel" required></div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Address</legend>
+                <div class="form-grid">
+                    <div class="form-group form-group-wide"><label for="street_address">Street address</label><input type="text" id="street_address" name="street_address" autocomplete="street-address" required></div>
+                    <div class="form-group"><label for="suburb">Suburb</label><input type="text" id="suburb" name="suburb" autocomplete="address-level-2" required></div>
+                    <div class="form-group"><label for="city">City</label><input type="text" id="city" name="city" autocomplete="address-level-1" required></div>
+                    <div class="form-group"><label for="postal_code">Postal code</label><input type="text" id="postal_code" name="postal_code" inputmode="numeric" autocomplete="postal-code" required></div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>Library and account</legend>
+                <div class="form-grid">
+                    <div class="form-group form-group-wide"><label for="library_id">Library</label><select id="library_id" name="library_id" required><option value="">Select your library</option>{% for library in libraries %}<option value="{{ library.id }}">{{ library.name }}</option>{% endfor %}</select></div>
+                    <div class="form-group form-group-wide"><label for="email">Email address</label><input type="email" id="email" name="email" autocomplete="email" required></div>
+                    <div class="form-group"><label for="password">Password</label><div class="password-field"><input type="password" id="password" name="password" autocomplete="new-password" minlength="8" required><button type="button" class="password-toggle" data-target="password" aria-label="Show password" aria-pressed="false">Show</button></div></div>
+                    <div class="form-group"><label for="confirm_password">Confirm password</label><div class="password-field"><input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" minlength="8" required><button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password" aria-pressed="false">Show</button></div></div>
+                </div>
+            </fieldset>
+            <div class="privacy-consent-control">
+                <input type="checkbox" id="privacy_consent" name="privacy_consent" value="accepted" required>
+                <label for="privacy_consent">I have read the <a href="{{ url_for('auth.privacy_consent') }}" target="_blank" rel="noopener">POPIA privacy notice</a> and consent to the use of my personal information, including my ID number and document, to verify my identity and process my membership application.</label>
+            </div>
+            <button type="submit" class="primary-btn">Continue</button>
+        </form>
+        <p class="auth-footer">Already have an account? <a href="{{ url_for('auth.login') }}">Login</a></p>
+    </section>
+</main>
+<script>
+    const idNumberInput = document.getElementById("id_number");
+    const dateOfBirthInput = document.getElementById("date_of_birth");
+    const phoneNumberInput = document.getElementById("phone_number");
+
+    function updateDateOfBirth() {
+        const idNumber = idNumberInput.value.replace(/\D/g, "");
+        idNumberInput.value = idNumber;
+
+        if (idNumber.length < 6) {
+            dateOfBirthInput.value = "";
+            return;
+        }
+
+        const year = Number(idNumber.slice(0, 2));
+        const month = idNumber.slice(2, 4);
+        const day = idNumber.slice(4, 6);
+        const currentYear = new Date().getFullYear();
+        const currentTwoDigits = currentYear % 100;
+        const fullYear = year <= currentTwoDigits ? 2000 + year : 1900 + year;
+        const candidate = `${fullYear}-${month}-${day}`;
+        const parsedDate = new Date(`${candidate}T00:00:00`);
+
+        if (
+            parsedDate.getFullYear() === fullYear &&
+            String(parsedDate.getMonth() + 1).padStart(2, "0") === month &&
+            String(parsedDate.getDate()).padStart(2, "0") === day
+        ) {
+            dateOfBirthInput.value = candidate;
+        } else {
+            dateOfBirthInput.value = "";
+        }
+    }
+
+    idNumberInput.addEventListener("input", updateDateOfBirth);
+
+    phoneNumberInput.addEventListener("input", () => {
+        phoneNumberInput.value = phoneNumberInput.value.replace(/\D/g, "").slice(0, 10);
+    });
+</script>
+{% endblock %}

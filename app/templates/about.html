@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}About | Library Management System{% endblock %}
+
+{% block content %}
+<main class="about-page">
+    <header class="about-navbar">
+        <a href="{{ url_for('auth.home') }}" class="home-logo about-logo">
+            <img
+                src="{{ url_for('static', filename='images/tshwane icon.jpg') }}"
+                alt="City of Tshwane"
+                class="home-logo-icon"
+            >
+            <span class="home-logo-text">
+                <strong>Library</strong>
+                <span>Management System</span>
+            </span>
+        </a>
+        <nav class="about-navigation" aria-label="Main navigation">
+            <a href="{{ url_for('auth.home') }}">Home</a>
+            <a href="{{ url_for('auth.login') }}">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="about-register-button">Register</a>
+        </nav>
+    </header>
+
+    <section class="about-intro">
+        <p class="section-label">About the service</p>
+        <h1>A simpler connection to your local library.</h1>
+        <p>
+            The Library Management System helps City of Tshwane residents create a
+            library account and complete identity verification securely from their phone.
+        </p>
+        <a href="{{ url_for('auth.register') }}" class="hero-main-button">Create your account</a>
+    </section>
+
+    <section class="about-details" aria-label="Library service information">
+        <article>
+            <h2>Built for access</h2>
+            <p>Register from anywhere, choose your library, and submit your ID document when it suits you.</p>
+        </article>
+        <article>
+            <h2>Designed for clarity</h2>
+            <p>Your registration and verification status are presented in clear steps, with the information you need at each stage.</p>
+        </article>
+        <article>
+            <h2>Handled securely</h2>
+            <p>Your identity document is submitted for library verification so your account can be prepared for use.</p>
+        </article>
+    </section>
+</main>
+{% endblock %}

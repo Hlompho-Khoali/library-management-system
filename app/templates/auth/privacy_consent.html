@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}POPIA Privacy Notice | Library Management System{% endblock %}
+
+{% block content %}
+<main class="registration-page">
+    <article class="registration-card privacy-notice">
+        <a href="{{ url_for('auth.register') }}" class="registration-back">Back to registration</a>
+        <h1>POPIA privacy notice</h1>
+        <p class="registration-intro">Notice version {{ notice_version }}. This notice explains how information submitted for a library membership application is used.</p>
+
+        <h2>Information collected</h2>
+        <p>The application asks for your name, South African identity number, date of birth, phone number, address, email address, selected library, and a photograph of your identity document. Your password is stored as a password hash. Do not include information that the form does not request.</p>
+
+        <h2>Why it is used</h2>
+        <p>The information is used to verify your identity, assess and administer your membership application, create and maintain a member account if approved, communicate with you about the application, and confirm membership eligibility when library access is checked.</p>
+
+        <h2>Who may receive or access it</h2>
+        <p>Authorised library staff involved in application review and membership administration may access relevant information. The service also relies on hosting, database, file-storage, and email providers to operate. Those providers should process information only under appropriate contractual and security safeguards. The library must confirm the providers, hosting locations, and any applicable cross-border transfers for this deployment.</p>
+
+        <h2>Retention and your choices</h2>
+        <p>Information should be retained only for as long as needed for the purposes above or as required by law. The library must apply its documented retention schedule, including to declined applications and identity-document images. You may ask the library to access or correct your information, or raise a privacy concern, using the library's published contact details or by contacting its Information Officer. Withdrawal of consent does not affect processing already carried out and may prevent the application from being completed; information may still be retained where the law requires it.</p>
+
+        <h2>Responsible party and lawful basis</h2>
+        <p>The library operating this membership service is responsible for deciding why and how your information is processed. The library should provide its identity and Information Officer contact details before collecting applications, and determine and document the appropriate lawful basis for each purpose. This notice and checkbox do not by themselves establish that the overall processing complies with POPIA.</p>
+
+        <p><a href="{{ url_for('auth.register') }}">Return to registration</a></p>
+    </article>
+</main>
+{% endblock %}

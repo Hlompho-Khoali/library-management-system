@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Security Desk | Library Management System{% endblock %}
+
+{% block content %}
+<main class="security-dashboard">
+    <header class="security-header">
+        <div>
+            <p class="section-label">Security desk</p>
+            <h1>Library access control</h1>
+            <p>Scan a member barcode to record entry or exit.</p>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="admin-logout">Logout</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message {% if category == 'error' %}flash-error{% elif category == 'success' %}flash-success{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="security-workspace">
+        <section class="scan-panel">
+            <p class="section-label">Barcode scanner</p>
+            <h2>Scan member card</h2>
+            <p class="scan-instruction">Place the cursor in the field, then scan the barcode.</p>
+            <form method="post" action="{{ url_for('verification.scan_member') }}" class="scan-form">
+                <label for="barcode">Member barcode</label>
+                <input id="barcode" name="barcode" type="text" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" minlength="8" autocomplete="off" autofocus placeholder="Scan 8-digit barcode" required>
+                <button type="submit" class="primary-btn">Check access</button>
+            </form>
+        </section>
+
+        <section class="occupancy-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-label">Live occupancy</p>
+                    <h2>Currently in the library</h2>
+                </div>
+                <strong class="occupancy-count">{{ current_visits|length }}</strong>
+            </div>
+            <div class="occupancy-list">
+                {% for visit in current_visits %}
+                    <div class="occupancy-row">
+                        <div>
+                            <strong>{{ visit.member.first_name }} {{ visit.member.last_name }}</strong>
+                            <p>Entered {{ visit.entry_at.strftime("%d %b %Y, %H:%M") }}</p>
+                        </div>
+                        <span class="tiny-badge">Inside</span>
+                    </div>
+                {% else %}
+                    <p class="verification-empty">Nobody is currently recorded inside.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </section>
+
+    <details class="visit-report">
+        <summary>Visit statistics</summary>
+        <div class="visit-report-content">
+            <p>Download the all-time entry and exit totals with a daily activity log.</p>
+            <a href="{{ url_for('verification.visit_statistics_pdf') }}" class="visit-report-download">Download PDF</a>
+        </div>
+    </details>
+
+    {% if result %}
+        <section class="scan-result {{ 'scan-approved' if result.approved else 'scan-denied' }}" id="scan-result" role="status">
+            <button type="button" class="scan-result-close" onclick="document.getElementById('scan-result').remove()" aria-label="Close result">&times;</button>
+            <p class="scan-result-label">{{ result.heading }}</p>
+            <h2>{{ result.name }}</h2>
+            <p>{{ result.message }}</p>
+            {% if result.member %}
+                <p class="scan-member-detail">Member number: {{ result.member_number }} · ID: {{ result.member.id_number }}</p>
+            {% endif %}
+        </section>
+    {% endif %}
+</main>
+
+<script>
+    const scanInput = document.getElementById("barcode");
+    if (scanInput) {
+        scanInput.focus();
+    }
+
+    const scanResult = document.getElementById("scan-result");
+    if (scanResult) {
+        window.setTimeout(() => scanResult.remove(), 5000);
+    }
+</script>
+{% endblock %}

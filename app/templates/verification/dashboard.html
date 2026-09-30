@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Library Management System{% endblock %}
+
+{% block content %}
+<main class="admin-dashboard">
+    <header class="admin-topbar">
+        <div>
+            <p class="section-label">Administrator panel</p>
+            <h1>Library administration dashboard</h1>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="admin-logout">Logout</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message {% if category == 'error' %}flash-error{% elif category == 'success' %}flash-success{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="admin-stats" aria-label="Dashboard overview">
+        <article class="admin-stat-card">
+            <span class="admin-stat-label">Pending review</span>
+            <strong id="pending-count">{{ pending|length }}</strong>
+        </article>
+        <article class="admin-stat-card">
+            <span class="admin-stat-label">Active members</span>
+            <strong>{{ active_members|length }}</strong>
+        </article>
+        <article class="admin-stat-card">
+            <span class="admin-stat-label">Access checks</span>
+            <strong>{{ 1 if status else 0 }}</strong>
+        </article>
+    </section>
+
+    <section class="admin-grid">
+        <div class="admin-main-panel">
+            <div class="panel-header">
+                <h2>Pending member applications</h2>
+                <span id="pending-label">{{ pending|length }} awaiting review</span>
+            </div>
+
+            <div id="pending-applications">
+                {% include "verification/_pending_applications.html" %}
+            </div>
+        </div>
+
+        <aside class="admin-side-panel">
+            <section class="side-card access-check">
+                <div class="panel-header compact">
+                    <h2>Library access check</h2>
+                </div>
+
+                <form method="post" class="lookup-form">
+                    <label for="member_lookup">Member lookup</label>
+                    <input id="member_lookup" name="member_lookup" type="text" placeholder="ID number, member ID, or email" />
+                    <button type="submit" class="primary-btn">Search</button>
+                </form>
+
+                {% if status %}
+                    <div class="status-pill {{ 'eligible' if 'Eligible' in status else 'not-eligible' if 'Not eligible' in status else '' }}">
+                        {{ status }}
+                    </div>
+                {% endif %}
+
+                {% if member %}
+                    <div class="member-summary">
+                        <h3>{{ member.first_name }} {{ member.last_name }}</h3>
+                        <p>ID number: {{ member.id_number }}</p>
+                        <p>Email: {{ member.email }}</p>
+                        <p>Status: {% if member.is_active and member.id_verified %}Eligible{% else %}Not eligible{% endif %}</p>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="side-card">
+                <div class="panel-header compact">
+                    <h2>Members</h2>
+                    <span class="member-count">{{ members|length }} total</span>
+                </div>
+
+                <div class="member-list">
+                    {% for member in members %}
+                        <div class="member-row">
+                            <div>
+                                <strong>{{ member.first_name }} {{ member.last_name }}</strong>
+                                <p>Member ID: {{ format_member_number(member.id) }}</p>
+                                <p>{{ member.email }}</p>
+                            </div>
+                            <div class="member-controls">
+                                <span class="tiny-badge {{ 'blocked' if not member.is_active else '' }}">
+                                    {{ 'Active' if member.is_active else 'Blocked' }}
+                                </span>
+                                {% if session.get('role') == 'admin' %}
+                                    {% if member.is_active %}
+                                        <form method="post" action="{{ url_for('verification.block_member', member_id=member.id) }}">
+                                            <button type="submit" class="member-action-button" aria-label="Block member" data-tooltip="Block member">B</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="post" action="{{ url_for('verification.reactivate_member', member_id=member.id) }}">
+                                            <button type="submit" class="member-action-button" aria-label="Reactivate member" data-tooltip="Reactivate member">R</button>
+                                        </form>
+                                    {% endif %}
+                                    <form method="post" action="{{ url_for('verification.delete_member', member_id=member.id) }}" onsubmit="return confirm('Permanently delete this member?');">
+                                        <button type="submit" class="member-action-button danger" aria-label="Delete member" data-tooltip="Delete member">X</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="verification-empty">No members found.</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </aside>
+    </section>
+
+    <details class="visit-report">
+        <summary>Monthly account statistics</summary>
+        <div class="visit-report-content">
+            <p>Download the number of member accounts created in each month.</p>
+            <a href="{{ url_for('verification.monthly_member_statistics_pdf') }}" class="visit-report-download">Download PDF</a>
+        </div>
+    </details>
+
+    <details class="visit-report">
+        <summary>Monthly entry statistics</summary>
+        <div class="visit-report-content">
+            <p>Download the total library entries recorded in each month.</p>
+            <a href="{{ url_for('verification.monthly_entry_statistics_pdf') }}" class="visit-report-download">Download PDF</a>
+        </div>
+    </details>
+</main>
+
+<script>
+    const pendingApplications = document.getElementById("pending-applications");
+    const pendingCount = document.getElementById("pending-count");
+    const pendingLabel = document.getElementById("pending-label");
+    let pendingMarkup = pendingApplications.innerHTML;
+
+    async function refreshPendingApplications() {
+        try {
+            const response = await fetch("{{ url_for('verification.pending_applications') }}", {
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+                cache: "no-store"
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const markup = await response.text();
+            const count = (markup.match(/class="review-card"/g) || []).length;
+
+            if (markup !== pendingMarkup) {
+                pendingApplications.innerHTML = markup;
+                pendingMarkup = markup;
+            }
+
+            pendingCount.textContent = count;
+            pendingLabel.textContent = `${count} awaiting review`;
+        } catch (error) {
+            console.error("Could not refresh pending applications:", error);
+        }
+    }
+
+    window.setInterval(refreshPendingApplications, 60 * 60 * 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Library Management System{% endblock %}</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}"
+    >
+</head>
+
+<body>
+
+    {% block content %}
+    {% endblock %}
+
+    <script>
+        document.querySelectorAll(".password-toggle").forEach((toggle) => {
+            toggle.addEventListener("click", () => {
+                const passwordInput = document.getElementById(toggle.dataset.target);
+                const isVisible = passwordInput.type === "text";
+
+                passwordInput.type = isVisible ? "password" : "text";
+                toggle.textContent = isVisible ? "Show" : "Hide";
+                toggle.setAttribute("aria-label", isVisible ? "Show password" : "Hide password");
+                toggle.setAttribute("aria-pressed", String(!isVisible));
+            });
+        });
+    </script>
+
+</body>
+</html>

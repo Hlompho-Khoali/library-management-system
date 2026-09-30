@@ -1,0 +1,51 @@
+{% for application in pending %}
+    <article class="review-card">
+        <div class="review-main">
+            <div class="review-person">
+                <div class="avatar-circle">{{ application.first_name[0]|upper }}{{ application.last_name[0]|upper }}</div>
+                <div>
+                    <h3>{{ application.first_name }} {{ application.last_name }}</h3>
+                    <p>{{ application.email }}</p>
+                </div>
+            </div>
+
+            <div class="review-meta">
+                <span><strong>ID:</strong> {{ application.id_number }}</span>
+                <span><strong>Date of birth:</strong> {{ application.date_of_birth.strftime("%d %B %Y") }}</span>
+                <span><strong>Submitted:</strong> {{ application.created_at.strftime("%d %B %Y, %H:%M") }}</span>
+                <span><strong>Library:</strong> {{ application.library_name }}</span>
+            </div>
+        </div>
+
+        <div class="review-document">
+            {% if application.id_document_url %}
+                <img src="{{ application.id_document_url }}" alt="Uploaded ID document for {{ application.first_name }} {{ application.last_name }}" />
+            {% else %}
+                <div class="document-placeholder">No ID image available.</div>
+            {% endif %}
+        </div>
+
+        <div class="review-actions">
+            <span class="verification-status">{{ application.status }}</span>
+            <form method="post" action="{{ url_for('verification.approve', verification_id=application.id) }}">
+                <button type="submit" class="primary-btn">Approve</button>
+            </form>
+        </div>
+
+        <form method="post" action="{{ url_for('verification.decline', verification_id=application.id) }}" class="decline-form">
+            <fieldset class="decline-reasons">
+                <legend>Reason for declining</legend>
+                {% for code, label in rejection_reason_choices.items() %}
+                    <label class="decline-reason-option">
+                        <input type="checkbox" name="reasons" value="{{ code }}"> {{ label }}
+                    </label>
+                {% endfor %}
+            </fieldset>
+            <label for="decline-comment-{{ application.id }}">Additional comment (optional)</label>
+            <textarea id="decline-comment-{{ application.id }}" name="comment" rows="2" placeholder="Add any extra detail for the applicant..."></textarea>
+            <button type="submit" class="secondary-btn">Decline</button>
+        </form>
+    </article>
+{% else %}
+    <div class="empty-state">No pending applications.</div>
+{% endfor %}

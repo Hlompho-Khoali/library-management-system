@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Member Dashboard | Library Management System{% endblock %}
+
+{% block content %}
+<main class="member-dashboard">
+    <header class="member-dashboard-header">
+        <div>
+            <p class="section-label">Member account</p>
+            <h1>Welcome, {{ member.first_name }}</h1>
+            <p>Your library membership is active and ready to use.</p>
+        </div>
+        <div class="member-dashboard-actions">
+            <a href="{{ url_for('auth.member_settings') }}" class="secondary-btn">Settings</a>
+            <a href="{{ url_for('auth.logout') }}" class="admin-logout">Logout</a>
+        </div>
+    </header>
+
+    <section class="member-dashboard-grid">
+        <article class="member-welcome-card">
+            <p class="section-label">Membership status</p>
+            {% if member.id_review_status == "approved" %}
+                <h2>Active member</h2>
+                <p>Your registration has been approved by the library administrator.</p>
+                <span class="status-pill eligible">Verified and active</span>
+            {% elif member.id_review_status == "declined" %}
+                <h2>Action required</h2>
+                <p>Your ID document was declined. Please review the details below and resubmit.</p>
+                <span class="status-pill not-eligible">Verification declined</span>
+            {% else %}
+                <h2>Under review</h2>
+                <p>Your resubmitted ID document is awaiting administrator review.</p>
+                <span class="status-pill pending">Pending review</span>
+            {% endif %}
+        </article>
+
+        <article class="member-details-card">
+            <div class="panel-header compact">
+                <h2>Account details</h2>
+            </div>
+            <dl class="member-details-list">
+                <div><dt>Member number</dt><dd>{{ member_number }}</dd></div>
+                <div><dt>Email</dt><dd>{{ member.email }}</dd></div>
+                <div><dt>Library</dt><dd>{{ library.name if library else "Library" }}</dd></div>
+                <div><dt>ID status</dt><dd>{{ "Verified" if member.id_review_status == "approved" else "Declined" if member.id_review_status == "declined" else "Pending review" }}</dd></div>
+            </dl>
+        </article>
+    </section>
+
+    {% if member.id_review_status == "approved" %}
+        <section class="member-card-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-label">Your virtual card</p>
+                    <h2>Show this card when visiting the library</h2>
+                </div>
+                <span class="status-pill eligible">Valid member</span>
+            </div>
+            <img class="virtual-card-image" src="{{ url_for('static', filename='cards/' + card_filename) }}" alt="Virtual library card for {{ member.first_name }} {{ member.last_name }}">
+            <a
+                class="card-download-link"
+                href="{{ url_for('static', filename='cards/' + card_filename) }}"
+                download="library-card-{{ member_number }}.png"
+            >
+                Download PNG
+            </a>
+        </section>
+    {% elif member.id_review_status == "declined" %}
+        <section class="member-card-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-label">ID verification</p>
+                    <h2>Your ID verification needs attention</h2>
+                </div>
+                <span class="status-pill not-eligible">Action required</span>
+            </div>
+            <p>The administrator declined your submitted ID document for the following reason(s):</p>
+            <ul class="rejection-reason-list">
+                {% for reason in rejection_reasons %}
+                    <li>{{ reason }}</li>
+                {% endfor %}
+            </ul>
+            {% if member.id_rejection_comment %}
+                <p class="rejection-comment"><strong>Admin comment:</strong> {{ member.id_rejection_comment }}</p>
+            {% endif %}
+            <p>Please upload a clear photo of your ID document to continue. Your virtual card will appear once it is approved.</p>
+
+            <form id="reupload-form" class="reupload-form">
+                <label for="reupload-file">Upload a new ID photo</label>
+                <input type="file" id="reupload-file" accept="image/*" capture="environment" required>
+                <button type="submit" class="primary-btn">Submit for review</button>
+            </form>
+            <p id="reupload-message" class="reupload-message"></p>
+        </section>
+    {% else %}
+        <section class="member-card-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-label">ID verification</p>
+                    <h2>Your resubmitted ID is under review</h2>
+                </div>
+                <span class="status-pill pending">Pending</span>
+            </div>
+            <p>Thank you for resubmitting your ID document. Please wait for the administrator to review it again. Your virtual card will appear here once it is approved.</p>
+        </section>
+    {% endif %}
+
+    {% for child_card in child_cards %}
+        <section class="member-card-panel child-card-panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-label">Child virtual card</p>
+                    <h2>{{ child_card.member.first_name }} {{ child_card.member.last_name }}</h2>
+                </div>
+                <span class="status-pill child-member-badge">Child member</span>
+            </div>
+            <img class="virtual-card-image" src="{{ url_for('static', filename='cards/' + child_card.card_filename, v=child_card.card_version) }}" alt="Child virtual library card for {{ child_card.member.first_name }} {{ child_card.member.last_name }}">
+            <a
+                class="card-download-link"
+                href="{{ url_for('static', filename='cards/' + child_card.card_filename, v=child_card.card_version) }}"
+                download="library-card-{{ child_card.member_number }}.png"
+            >
+                Download PNG
+            </a>
+        </section>
+    {% endfor %}
+</main>
+
+<script>
+    const reuploadForm = document.getElementById("reupload-form");
+
+    if (reuploadForm) {
+        reuploadForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const fileInput = document.getElementById("reupload-file");
+            const messageEl = document.getElementById("reupload-message");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                messageEl.textContent = "Please choose an image to upload.";
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = async () => {
+                try {
+                    const response = await fetch("{{ url_for('auth.reupload_id') }}", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ image: reader.result }),
+                    });
+                    const result = await response.json();
+
+                    messageEl.textContent = result.message;
+
+                    if (result.success) {
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    messageEl.textContent = "The image could not be uploaded. Please try again.";
+                }
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+</script>
+{% endblock %}

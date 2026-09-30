@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings | Library Management System{% endblock %}
+
+{% block content %}
+<main class="member-dashboard">
+    <header class="member-dashboard-header">
+        <div>
+            <p class="section-label">Member account</p>
+            <h1>Account settings</h1>
+            <p>Update your contact details and password.</p>
+        </div>
+        <a href="{{ url_for('auth.member_dashboard') }}" class="admin-logout">Back to dashboard</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message {% if category == 'error' %}flash-error{% elif category == 'success' %}flash-success{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="member-details-card settings-card">
+        <div class="panel-header compact">
+            <h2>Account details</h2>
+        </div>
+        <dl class="member-details-list">
+            <div><dt>Name</dt><dd>{{ member.title }} {{ member.first_name }} {{ member.last_name }}</dd></div>
+            <div><dt>ID number</dt><dd>{{ member.id_number }}</dd></div>
+            <div><dt>Email</dt><dd>{{ member.email }}</dd></div>
+        </dl>
+    </section>
+
+    <section class="member-details-card settings-card child-members-card">
+        <div class="panel-header compact">
+            <div>
+                <p class="section-label">Family memberships</p>
+                <h2>Child memberships</h2>
+            </div>
+        </div>
+        <p class="settings-hint">Create a library membership for a child under 18. Their virtual card will appear on your dashboard.</p>
+        <div class="child-members-list">
+            {% for child in member.children %}
+                <div class="child-member-row">
+                    <div>
+                        <strong>{{ child.first_name }} {{ child.last_name }}</strong>
+                        <span>{{ child.date_of_birth.strftime("%d %b %Y") }}</span>
+                    </div>
+                    <div class="child-member-actions">
+                        <details class="child-edit-details">
+                            <summary>Edit</summary>
+                            <form method="POST" action="{{ url_for('auth.edit_child', child_id=child.id) }}" class="child-edit-form">
+                                <input type="text" name="first_name" value="{{ child.first_name }}" aria-label="Child first name" required>
+                                <input type="text" name="middle_name" value="{{ child.middle_name or '' }}" aria-label="Child middle name">
+                                <input type="text" name="last_name" value="{{ child.last_name }}" aria-label="Child last name" required>
+                                <input type="date" name="date_of_birth" value="{{ child.date_of_birth.isoformat() }}" aria-label="Child date of birth" required>
+                                <button type="submit" class="member-action-button">Save</button>
+                            </form>
+                        </details>
+                        <form method="POST" action="{{ url_for('auth.delete_child', child_id=child.id) }}" onsubmit="return confirm('Delete this child membership?');">
+                            <button type="submit" class="member-action-button danger" aria-label="Delete child membership">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <p class="verification-empty">No child memberships yet.</p>
+            {% endfor %}
+        </div>
+        <form method="POST" action="{{ url_for('auth.add_child') }}" class="child-member-form">
+            <div class="form-grid">
+                <div class="form-group"><label for="child_first_name">First name</label><input type="text" id="child_first_name" name="first_name" required></div>
+                <div class="form-group"><label for="child_middle_name">Middle name</label><input type="text" id="child_middle_name" name="middle_name"></div>
+                <div class="form-group"><label for="child_last_name">Last name</label><input type="text" id="child_last_name" name="last_name" required></div>
+                <div class="form-group"><label for="child_date_of_birth">Date of birth</label><input type="date" id="child_date_of_birth" name="date_of_birth" required></div>
+            </div>
+            <button type="submit" class="primary-btn">Create child membership</button>
+        </form>
+    </section>
+
+    <form method="POST" class="settings-form">
+        <fieldset>
+            <legend>Contact details</legend>
+            <div class="form-grid">
+                <div class="form-group"><label for="phone_number">Phone number</label><input type="tel" id="phone_number" name="phone_number" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" minlength="10" value="{{ member.phone_number }}" required></div>
+                <div class="form-group form-group-wide"><label for="street_address">Street address</label><input type="text" id="street_address" name="street_address" value="{{ member.street_address }}" required></div>
+                <div class="form-group"><label for="suburb">Suburb</label><input type="text" id="suburb" name="suburb" value="{{ member.suburb }}" required></div>
+                <div class="form-group"><label for="city">City</label><input type="text" id="city" name="city" value="{{ member.city }}" required></div>
+                <div class="form-group"><label for="postal_code">Postal code</label><input type="text" id="postal_code" name="postal_code" inputmode="numeric" value="{{ member.postal_code }}" required></div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Change password</legend>
+            <p class="settings-hint">Leave these fields blank to keep your current password.</p>
+            <div class="form-grid">
+                <div class="form-group form-group-wide"><label for="current_password">Current password</label><div class="password-field"><input type="password" id="current_password" name="current_password" autocomplete="current-password"><button type="button" class="password-toggle" data-target="current_password" aria-label="Show password" aria-pressed="false">Show</button></div></div>
+                <div class="form-group"><label for="new_password">New password</label><div class="password-field"><input type="password" id="new_password" name="new_password" autocomplete="new-password" minlength="8"><button type="button" class="password-toggle" data-target="new_password" aria-label="Show password" aria-pressed="false">Show</button></div></div>
+                <div class="form-group"><label for="confirm_password">Confirm new password</label><div class="password-field"><input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" minlength="8"><button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password" aria-pressed="false">Show</button></div></div>
+            </div>
+        </fieldset>
+
+        <button type="submit" class="primary-btn">Save changes</button>
+    </form>
+</main>
+
+<script>
+    const phoneNumberInput = document.getElementById("phone_number");
+    phoneNumberInput.addEventListener("input", () => {
+        phoneNumberInput.value = phoneNumberInput.value.replace(/\D/g, "").slice(0, 10);
+    });
+</script>
+{% endblock %}

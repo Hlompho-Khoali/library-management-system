@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Identity Verification | Library Management System{% endblock %}
+
+{% block content %}
+<main class="verification-step-page">
+    <section class="verification-step-card verification-complete-card">
+        <p class="section-label">Identity verification</p>
+        <h1>Document received</h1>
+        <p class="verification-step-intro">
+        We have received your ID document securely.
+        </p>
+
+        <p class="verification-detail">
+        Your registration has been submitted to the administrator for review.
+        </p>
+
+        <p class="verification-status">Pending approval</p>
+
+        <p class="verification-detail">
+            Please try to log in after 24 hours to check the status of your application.
+        </p>
+    </section>
+</main>
+
+<script>
+    async function checkRegistrationStatus() {
+        try {
+            const response = await fetch("{{ url_for('auth.registration_status') }}", {
+                cache: "no-store"
+            });
+            const result = await response.json();
+
+            if (result.status === "approved" && result.redirect) {
+                window.location.replace(result.redirect);
+                return;
+            }
+
+            if (result.status === "declined" && result.redirect) {
+                window.location.replace(result.redirect);
+                return;
+            }
+        } catch (error) {
+            console.error("Could not check registration status:", error);
+        }
+    }
+
+    window.setInterval(checkRegistrationStatus, 5000);
+</script>
+{% endblock %}

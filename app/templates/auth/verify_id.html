@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Your Identity | Library Management System{% endblock %}
+
+{% block content %}
+<main class="verification-step-page">
+    <section class="verification-step-card">
+        <p class="section-label">Identity verification</p>
+        <h1>Verify your identity</h1>
+        <p class="verification-step-intro">Take a clear photograph of your original ID document.</p>
+
+        <h2>Before taking your picture</h2>
+        <ol class="verification-guidance">
+        <li>Have your original ID document ready.</li>
+        <li>Place the ID on a flat surface.</li>
+        <li>Make sure the entire ID is visible.</li>
+        <li>Make sure you have enough lighting.</li>
+        <li>Avoid glare and reflections on the ID.</li>
+        <li>Make sure all text is clearly visible.</li>
+        <li>Keep your phone steady when taking the picture.</li>
+        <li>Allow camera access when your browser asks for permission.</li>
+    </ol>
+
+        </ol>
+
+        <h2>Take a picture of your ID</h2>
+
+        <video
+        id="camera"
+        autoplay
+        playsinline
+        ></video>
+
+        <div class="camera-actions">
+            <button type="button" id="start-camera" class="primary-btn">
+        Allow Camera Access
+            </button>
+
+            <button type="button" id="take-photo" class="secondary-btn">
+        Take Photo
+            </button>
+        </div>
+
+        <canvas
+        id="photo"
+        style="display: none;"
+        ></canvas>
+
+        <img
+        id="preview"
+        style="display: none;"
+        alt="ID preview"
+        >
+
+        <div class="camera-actions">
+            <button type="button" id="retake" class="secondary-btn" style="display: none;">
+        Retake
+            </button>
+
+            <button type="button" id="use-photo" class="primary-btn" style="display: none;">
+        Use Photo
+            </button>
+        </div>
+    </section>
+</main>
+
+
+    <script>
+
+        const video = document.getElementById("camera");
+        const canvas = document.getElementById("photo");
+        const preview = document.getElementById("preview");
+
+        const startCameraButton =
+            document.getElementById("start-camera");
+
+        const takePhotoButton =
+            document.getElementById("take-photo");
+
+        const retakeButton =
+            document.getElementById("retake");
+
+        const usePhotoButton =
+            document.getElementById("use-photo");
+
+        let stream = null;
+
+
+        // Request camera access
+        startCameraButton.addEventListener("click", async () => {
+
+            try {
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment"
+                    },
+                    audio: false
+                });
+
+                video.srcObject = stream;
+
+                startCameraButton.style.display = "none";
+
+            } catch (error) {
+
+                console.error("Camera access failed:", error);
+
+                alert(
+                    "Camera access is required to photograph your ID."
+                );
+            }
+
+        });
+
+
+        // Take photograph
+        takePhotoButton.addEventListener("click", () => {
+
+            if (!stream) {
+                alert("Please allow camera access first.");
+                return;
+            }
+
+            const context = canvas.getContext("2d");
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            context.drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            const imageData =
+                canvas.toDataURL("image/jpeg");
+
+            preview.src = imageData;
+
+            video.style.display = "none";
+            preview.style.display = "block";
+
+            takePhotoButton.style.display = "none";
+            retakeButton.style.display = "inline-block";
+            usePhotoButton.style.display = "inline-block";
+
+        });
+
+
+        // Retake photograph
+        retakeButton.addEventListener("click", () => {
+
+            preview.style.display = "none";
+            video.style.display = "block";
+
+            takePhotoButton.style.display = "inline-block";
+            retakeButton.style.display = "none";
+            usePhotoButton.style.display = "none";
+
+        });
+
+
+        // Use photograph
+        usePhotoButton.addEventListener("click", async () => {
+
+            const imageData = canvas.toDataURL("image/jpeg", 0.9);
+
+            usePhotoButton.disabled = true;
+            usePhotoButton.textContent = "Uploading...";
+
+            try {
+
+                const response = await fetch("/upload-id", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        image: imageData
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+
+                    window.location.href = result.redirect;
+
+                } else {
+
+                    alert(result.message);
+
+                    usePhotoButton.disabled = false;
+                    usePhotoButton.textContent = "Use Photo";
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Something went wrong while uploading the ID photo."
+                );
+
+                usePhotoButton.disabled = false;
+                usePhotoButton.textContent = "Use Photo";
+            }
+
+        });
+
+    </script>
+
+{% endblock %}

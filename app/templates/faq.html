@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Frequently Asked Questions | Library Management System{% endblock %}
+
+{% block content %}
+<main class="faq-page">
+    <header class="faq-navbar">
+        <a href="{{ url_for('auth.home') }}" class="home-logo">
+            <img
+                src="{{ url_for('static', filename='images/tshwane icon.jpg') }}"
+                alt="City of Tshwane"
+                class="home-logo-icon"
+            >
+            <span class="home-logo-text">
+                <strong>Library</strong>
+                <span>Management System</span>
+            </span>
+        </a>
+        <nav class="faq-navigation" aria-label="Main navigation">
+            <a href="{{ url_for('auth.home') }}">Home</a>
+            <a href="{{ url_for('auth.login') }}">Login</a>
+            <a href="{{ url_for('auth.register') }}">Register</a>
+        </nav>
+    </header>
+
+    <section class="faq-content" aria-labelledby="faq-title">
+        <p class="section-label">Help and support</p>
+        <h1 id="faq-title">Frequently asked questions</h1>
+        <p class="faq-intro">Answers about creating an account, identity verification, and managing your library application.</p>
+
+        <div class="faq-list">
+            <details>
+                <summary>How do I apply for a library account?</summary>
+                <div class="faq-answer">
+                    <p>Choose Register and complete the application form, including your personal and contact details and your preferred library. You will then be asked to submit a photograph of your South African ID document for review.</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>Why do I need to provide an ID number and document?</summary>
+                <div class="faq-answer">
+                    <p>The library uses these details to verify your identity and assess your membership application. Read the <a href="{{ url_for('auth.privacy_consent') }}">POPIA privacy notice</a> for information about how application data is used and your privacy choices.</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>What happens after I submit my application?</summary>
+                <div class="faq-answer">
+                    <p>Your application is marked as pending while an authorised staff member reviews it. The confirmation page advises you to try logging in after 24 hours to check your application status.</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>How do I check my application status?</summary>
+                <div class="faq-answer">
+                    <p>Log in with the email address and password used for registration. If your application was declined, log in to view the reason and follow the available steps to resubmit your ID document.</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>What if I forget my password?</summary>
+                <div class="faq-answer">
+                    <p>Use the Forgot password link on the login page and follow the instructions sent to your registered email address.</p>
+                </div>
+            </details>
+
+            <details>
+                <summary>Can I change or correct my personal information?</summary>
+                <div class="faq-answer">
+                    <p>For help correcting information or making a privacy-related request, contact your library using its published contact details or ask for its Information Officer.</p>
+                </div>
+            </details>
+        </div>
+
+        <p class="faq-contact">Still need help? Contact your library using its published contact details.</p>
+    </section>
+</main>
+{% endblock %}

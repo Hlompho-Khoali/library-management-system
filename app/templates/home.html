@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome | Library Management System{% endblock %}
+
+{% block content %}
+
+<div class="home-page">
+
+    <!-- Navigation -->
+    <header class="home-navbar">
+
+        <a href="{{ url_for('auth.home') }}" class="home-logo">
+            <img
+                src="{{ url_for('static', filename='images/tshwane icon.jpg') }}"
+                alt="City of Tshwane"
+                class="home-logo-icon"
+            >
+
+            <div class="home-logo-text">
+                <strong>Library</strong>
+                <span>Management System</span>
+            </div>
+        </a>
+
+        <nav class="home-navigation">
+
+            <a
+                href="{{ url_for('auth.login') }}"
+                class="home-login-link"
+            >
+                Login
+            </a>
+
+            <a
+                href="{{ url_for('auth.register') }}"
+                class="home-register-button"
+            >
+                Register
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- Hero -->
+    <main>
+
+        <section 
+        class="home-hero" 
+        id="home"
+        >
+
+        <section>
+
+            <div class="cta-content">
+
+                <div class="section-label">
+                    START YOUR JOURNEY
+                </div>
+
+                <h2>
+                    Digital Library
+                    <span>Access System</span>
+                </h2>
+
+                <p>
+                    ES'KIA MPHAHLELE. COMMUNITY LIBRARY.
+                </p>
+
+                <a
+                    href="{{ url_for('auth.register') }}"
+                    class="hero-main-button"
+                >
+                    Create Your Account
+                    <span></span>
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer class="home-footer">
+
+        <div class="footer-brand">
+
+            <img
+                src="{{ url_for('static', filename='images/tshwane icon.jpg') }}"
+                alt="City of Tshwane"
+                class="home-logo-icon"
+            >
+
+            <div>
+                <strong>Library Management System</strong>
+
+                <p>
+                    A smarter way to experience your library.
+                </p>
+            </div>
+
+        </div>
+
+
+        <address class="footer-contact">
+            <strong>Es'kia Mphahlele Community Library</strong>
+            <span>Cnr Madiba and Sisulu Streets, Pretoria Central</span>
+            <span>Tel <a href="tel:0123588957">012 358 8957/8806</a></span>
+            <a href="https://www.tshwane.gov.za">www.tshwane.gov.za</a>
+            <span class="footer-hours">Visiting hours: Mon - Fri 09:00 - 16:50</span>
+        </address>
+
+
+        <div class="footer-links">
+
+            <a href="#home">Home</a>
+
+            <a href="{{ url_for('auth.about') }}">About</a>
+
+            <a href="{{ url_for('auth.faq') }}">FAQ</a>
+
+            <a href="{{ url_for('auth.login') }}">
+                Login
+            </a>
+
+        </div>
+
+
+        <div class="footer-copy">
+            © 2026 Library Management System
+        </div>
+
+    </footer>
+
+</div>
+
+{% endblock %}
