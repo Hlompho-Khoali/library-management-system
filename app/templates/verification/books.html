@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Books | Library Management System{% endblock %}
+
+{% macro loan_actions(loan, member_number) %}
+    <div class="book-actions">
+        {% if loan.closed_at is none %}
+            <form method="post" action="{{ url_for('books.return_loan', loan_id=loan.id) }}">
+                <button type="submit" class="secondary-btn">Return</button>
+            </form>
+            {% if loan.status == 'lost' %}
+                <form method="post" action="{{ url_for('books.replace_lost', loan_id=loan.id) }}" onsubmit="return confirm('Confirm the exact same book has been replaced?');">
+                    <button type="submit" class="secondary-btn">Mark replaced</button>
+                </form>
+            {% else %}
+                <form method="post" action="{{ url_for('books.mark_lost', loan_id=loan.id) }}" onsubmit="return confirm('Mark this book as lost?');">
+                    <button type="submit" class="secondary-btn">Mark lost</button>
+                </form>
+            {% endif %}
+        {% endif %}
+        {% if loan.fee_outstanding() > 0 %}
+            <form method="post" action="{{ url_for('books.pay_fee', loan_id=loan.id) }}">
+                <button type="submit" class="primary-btn">Record payment R{{ loan.fee_outstanding() }}</button>
+            </form>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% block content %}
+<main class="admin-dashboard">
+    <header class="admin-topbar">
+        <div>
+            <p class="section-label">Administrator panel</p>
+            <h1>Books</h1>
+        </div>
+        <nav class="admin-tabs">
+            <a href="{{ url_for('verification.dashboard') }}">Overview</a>
+            <a href="{{ url_for('books.books') }}" class="active">Books</a>
+            <a href="{{ url_for('auth.logout') }}" class="admin-logout">Logout</a>
+        </nav>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash-message {% if category == 'error' %}flash-error{% elif category == 'success' %}flash-success{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <p class="book-policy" role="note">Policy: up to {{ loan_limit }} books per member, {{ loan_days }}-day loans, R{{ fee_per_day }} per day overdue. Overdue members are blocked automatically.</p>
+
+    <div class="books-tabs" role="tablist">
+        <button type="button" class="books-tab" data-tab="borrow">Borrow / Return</button>
+        <button type="button" class="books-tab" data-tab="catalogue">Catalogue</button>
+        <button type="button" class="books-tab" data-tab="add">Add book</button>
+        <button type="button" class="books-tab" data-tab="owing">Owing members{% if owing_members %} ({{ owing_members|length }}){% endif %}</button>
+    </div>
+
+    <section class="books-pane admin-main-panel" data-pane="borrow">
+            <div class="panel-header">
+                <h2>Borrow a book</h2>
+            </div>
+
+            <form method="get" class="lookup-form">
+                <label for="member_number">Scan membership number</label>
+                <input id="member_number" name="member_number" type="text" inputmode="numeric" autocomplete="off" autofocus placeholder="8-digit membership number" value="{{ request.args.get('member_number', '') }}" required>
+                <button type="submit" class="primary-btn">Find member</button>
+            </form>
+
+            {% if member %}
+                <div class="member-summary">
+                    <h3>{{ member.first_name }} {{ member.last_name }}</h3>
+                    <p>Member number: {{ member_number }}</p>
+                    <p>ID number: {{ member.id_number }}</p>
+                    <p>Address: {{ member.street_address }}, {{ member.suburb }}, {{ member.city }}, {{ member.postal_code }}</p>
+                    <p>Books on loan: {{ member_loans|length }} / {{ loan_limit }}</p>
+                    <p>Outstanding fees: R{{ member_fees }}</p>
+                    <p>Status: {% if member.is_active %}Active{% elif member.block_reason == 'overdue' %}Blocked – overdue book(s){% else %}Blocked{% endif %}</p>
+                </div>
+
+                {% if denial_reason %}
+                    <div class="status-pill not-eligible">{{ denial_reason }}</div>
+                {% else %}
+                    <form method="post" action="{{ url_for('books.checkout') }}" class="lookup-form">
+                        <input type="hidden" name="member_number" value="{{ member_number }}">
+                        <label for="checkout_item_id">Scan item ID</label>
+                        <input id="checkout_item_id" name="item_id" type="text" autocomplete="off" required>
+                        <button type="submit" class="primary-btn">Check out</button>
+                    </form>
+                {% endif %}
+
+                {% for loan in member.loans if loan.closed_at is none or loan.fee_outstanding() > 0 %}
+                    <div class="member-row">
+                        <div>
+                            <strong>{{ loan.book.title }}</strong>
+                            <p>Item {{ loan.book.item_id }} · due {{ loan.due_at.strftime("%d %b %Y") }}
+                                {% if loan.status == 'lost' %}· <b>LOST</b>{% elif loan.is_overdue() %}· <b>OVERDUE {{ loan.days_overdue() }} day(s)</b>{% elif loan.closed_at %}· {{ loan.status }}{% endif %}
+                                {% if loan.fee_outstanding() > 0 %}· fee R{{ loan.fee_outstanding() }}{% endif %}</p>
+                        </div>
+                        {{ loan_actions(loan, member_number) }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="panel-header">
+                <h2>Return a book</h2>
+            </div>
+            <form method="post" action="{{ url_for('books.return_book') }}" class="lookup-form">
+                <label for="return_item_id">Scan item ID</label>
+                <input id="return_item_id" name="item_id" type="text" autocomplete="off" required>
+                <button type="submit" class="primary-btn">Return</button>
+            </form>
+
+    </section>
+
+    <section class="books-pane admin-main-panel" data-pane="catalogue">
+            <div class="panel-header">
+                <h2>Catalogue</h2>
+                <span>{{ books|length }} item(s)</span>
+            </div>
+            <div class="member-list">
+                {% for book in books %}
+                    {% set loan = book.current_loan %}
+                    <div class="member-row">
+                        <div>
+                            <strong>{{ book.title }}</strong>
+                            <p>{{ book.author }} · Item ID {{ book.item_id }}</p>
+                            {% if loan %}<p>With {{ loan.member.first_name }} {{ loan.member.last_name }} ({{ format_member_number(loan.member.id) }}) · due {{ loan.due_at.strftime("%d %b %Y") }}</p>{% endif %}
+                        </div>
+                        <div class="member-controls">
+                            <span class="tiny-badge {{ 'blocked' if book.status != 'available' else '' }}">{{ book.status|capitalize }}</span>
+                            {% if not book.loans %}
+                                <form method="post" action="{{ url_for('books.delete_book', book_id=book.id) }}" onsubmit="return confirm('Remove this book?');">
+                                    <button type="submit" class="member-action-button danger" aria-label="Delete book">X</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="verification-empty">No books have been added yet.</p>
+                {% endfor %}
+            </div>
+    </section>
+
+    <section class="books-pane admin-main-panel" data-pane="add">
+            <section class="side-card">
+                <div class="panel-header compact">
+                    <h2>Add a book</h2>
+                </div>
+                <form method="post" action="{{ url_for('books.add_book') }}" class="lookup-form">
+                    <label for="item_id">Item ID</label>
+                    <input id="item_id" name="item_id" type="text" required>
+                    <label for="title">Title</label>
+                    <input id="title" name="title" type="text" required>
+                    <label for="author">Author</label>
+                    <input id="author" name="author" type="text" required>
+                    <button type="submit" class="primary-btn">Add book</button>
+                </form>
+            </section>
+
+    </section>
+
+    <section class="books-pane admin-main-panel" data-pane="owing">
+            <section class="side-card">
+                <div class="panel-header compact">
+                    <h2>Members owing books or fees</h2>
+                </div>
+                {% for owing in owing_members %}
+                    <div class="member-row">
+                        <div>
+                            <strong>{{ owing.first_name }} {{ owing.last_name }}</strong>
+                            <p>{{ format_member_number(owing.id) }} · fees R{{ total_outstanding_fees(owing) }}</p>
+                            <p><a href="{{ url_for('books.books', member_number=format_member_number(owing.id)) }}">Manage loans</a></p>
+                        </div>
+                        <div class="member-controls">
+                            <span class="tiny-badge {{ 'blocked' if not owing.is_active else '' }}">{{ 'Active' if owing.is_active else 'Blocked' }}</span>
+                            {% if owing.is_active %}
+                                <form method="post" action="{{ url_for('verification.block_member', member_id=owing.id) }}">
+                                    <input type="hidden" name="return_to" value="books">
+                                    <button type="submit" class="member-action-button" aria-label="Block member">B</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ url_for('verification.reactivate_member', member_id=owing.id) }}">
+                                    <input type="hidden" name="return_to" value="books">
+                                    <button type="submit" class="member-action-button" aria-label="Lift block">R</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="verification-empty">No members owe books or fees.</p>
+                {% endfor %}
+            </section>
+    </section>
+</main>
+
+<script>
+    (function () {
+        const tabs = document.querySelectorAll(".books-tab");
+        const panes = document.querySelectorAll(".books-pane");
+        const hasMember = new URLSearchParams(window.location.search).has("member_number");
+        let current = hasMember ? "borrow" : (sessionStorage.getItem("booksTab") || "borrow");
+
+        function show(name) {
+            current = name;
+            sessionStorage.setItem("booksTab", name);
+            tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
+            panes.forEach((pane) => { pane.hidden = pane.dataset.pane !== name; });
+        }
+
+        tabs.forEach((tab) => tab.addEventListener("click", () => show(tab.dataset.tab)));
+        show(current);
+    })();
+</script>
+{% endblock %}

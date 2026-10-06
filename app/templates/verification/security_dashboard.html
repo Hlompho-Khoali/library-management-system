@@ -55,6 +55,29 @@
         </section>
     </section>
 
+    <section class="occupancy-panel">
+        <div class="panel-header">
+            <div>
+                <p class="section-label">Blocked members</p>
+                <h2>Blocked for outstanding books</h2>
+            </div>
+            <strong class="occupancy-count">{{ overdue_blocked|length }}</strong>
+        </div>
+        <div class="occupancy-list">
+            {% for blocked in overdue_blocked %}
+                <div class="occupancy-row">
+                    <div>
+                        <strong>{{ blocked.first_name }} {{ blocked.last_name }}</strong>
+                        <p>{{ format_member_number(blocked.id) }} ? owes R{{ total_outstanding_fees(blocked) }}. Send to the admin desk to return the book(s) and pay.</p>
+                    </div>
+                    <span class="tiny-badge blocked">Blocked</span>
+                </div>
+            {% else %}
+                <p class="verification-empty">No members are blocked for outstanding books.</p>
+            {% endfor %}
+        </div>
+    </section>
+
     <details class="visit-report">
         <summary>Visit statistics</summary>
         <div class="visit-report-content">

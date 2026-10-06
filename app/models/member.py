@@ -69,10 +69,20 @@ class Member(db.Model):
         passive_deletes=True,
     )
 
+    loans = db.relationship(
+        "Loan",
+        back_populates="member",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="Loan.checked_out_at.desc()",
+    )
+
     # Account information
     email = db.Column(db.String(255), nullable=False, unique=True)
     password_hash = db.Column(db.String(255), nullable=False)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    # Set to "overdue" when the library blocks a member for unreturned books
+    block_reason = db.Column(db.String(30), nullable=True)
     role = db.Column(
         db.String(30),
         nullable=False,

@@ -9,6 +9,11 @@ from flask import (
 )
 
 from app.models import Library, Member, Verification
+from app.services.loan_service import (
+    OVERDUE_BLOCK,
+    enforce_overdue_blocks,
+    total_outstanding_fees,
+)
 from app.extensions import db
 from app.services.approval_service import create_member_from_verification
 from app.services.card_service import generate_virtual_card, format_member_number
@@ -238,6 +243,8 @@ def login():
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
+        enforce_overdue_blocks()
+
         # Find the account
         member = Member.query.filter_by(email=email).first()
 
@@ -251,6 +258,14 @@ def login():
             return render_template("auth/login.html")
 
         # Check whether account is active
+        if not member.is_active and member.block_reason == OVERDUE_BLOCK:
+            flash(
+                "Your membership is blocked because you have outstanding book(s). "
+                "Please report to the admin desk to return the book(s) and pay any outstanding fees.",
+                "error",
+            )
+            return render_template("auth/login.html")
+
         if not member.is_active:
             flash("Your account is inactive. Please contact the library.", "error")
             return render_template("auth/login.html")
@@ -384,6 +399,9 @@ def member_dashboard():
         member_number=member_number,
         card_filename=card_filename,
         child_cards=child_cards,
+        loans=[loan for loan in member.loans if loan.closed_at is None],
+        outstanding_fees=total_outstanding_fees(member),
+        fee_loans=[loan for loan in member.loans if loan.fee_outstanding() > 0],
         rejection_reasons=describe_rejection_reasons(member.id_rejection_reasons),
     )
 

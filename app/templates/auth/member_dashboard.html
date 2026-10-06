@@ -16,6 +16,13 @@
         </div>
     </header>
 
+    <div class="member-tabs" role="tablist">
+        <button type="button" class="member-tab" data-tab="membership">Membership</button>
+        <button type="button" class="member-tab" data-tab="books">Books{% if outstanding_fees %} (R{{ outstanding_fees }} due){% endif %}</button>
+    </div>
+
+    <div class="member-pane" data-pane="membership">
+
     <section class="member-dashboard-grid">
         <article class="member-welcome-card">
             <p class="section-label">Membership status</p>
@@ -124,9 +131,67 @@
             </a>
         </section>
     {% endfor %}
+    </div>
+
+    <div class="member-pane" data-pane="books" hidden>
+    <section class="member-card-panel member-books-panel">
+        <div class="panel-header">
+            <div>
+                <p class="section-label">Books</p>
+                <h2>Your borrowed books</h2>
+            </div>
+            {% if outstanding_fees %}
+                <span class="status-pill not-eligible">Outstanding fees: R{{ outstanding_fees }}</span>
+            {% else %}
+                <span class="status-pill eligible">No outstanding fees</span>
+            {% endif %}
+        </div>
+        {% if outstanding_fees %}
+            <p>Please pay your outstanding fees at the admin desk. Books are charged R2 for each day they are overdue.</p>
+        {% endif %}
+        {% if loans %}
+            <table class="books-table">
+                <thead>
+                    <tr><th>Title</th><th>Item ID</th><th>Author</th><th>Checked out</th><th>Due</th><th>Fee</th></tr>
+                </thead>
+                <tbody>
+                    {% for loan in loans %}
+                        <tr>
+                            <td>{{ loan.book.title }}{% if loan.status == 'lost' %} (lost){% endif %}</td>
+                            <td>{{ loan.book.item_id }}</td>
+                            <td>{{ loan.book.author }}</td>
+                            <td>{{ loan.checked_out_at.strftime("%d %b %Y") }}</td>
+                            <td>{{ loan.due_at.strftime("%d %b %Y") }}{% if loan.is_overdue() %} (overdue){% endif %}</td>
+                            <td>R{{ loan.fee_outstanding() }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>You have no books checked out.</p>
+        {% endif %}
+        {% for loan in fee_loans if loan.closed_at is not none %}
+            <p>Unpaid fee for returned book ?{{ loan.book.title }}?: R{{ loan.fee_outstanding() }}</p>
+        {% endfor %}
+    </section>
+    </div>
 </main>
 
 <script>
+    (function () {
+        const tabs = document.querySelectorAll(".member-tab");
+        const panes = document.querySelectorAll(".member-pane");
+
+        function show(name) {
+            sessionStorage.setItem("memberTab", name);
+            tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
+            panes.forEach((pane) => { pane.hidden = pane.dataset.pane !== name; });
+        }
+
+        tabs.forEach((tab) => tab.addEventListener("click", () => show(tab.dataset.tab)));
+        show(sessionStorage.getItem("memberTab") || "membership");
+    })();
+
     const reuploadForm = document.getElementById("reupload-form");
 
     if (reuploadForm) {

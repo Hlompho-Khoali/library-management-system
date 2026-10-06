@@ -21,6 +21,12 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from app.extensions import db
 from app.models import Member, Verification, Library
 from app.models import LibraryVisit
+from app.services.loan_service import (
+    OVERDUE_BLOCK,
+    can_lift_block,
+    enforce_overdue_blocks,
+    total_outstanding_fees,
+)
 from app.services.card_service import generate_virtual_card, format_member_number
 from app.services.approval_service import create_member_from_verification
 from app.services.rejection_reasons import REJECTION_REASONS
@@ -68,6 +74,8 @@ def dashboard():
     access_redirect = require_staff_access()
     if access_redirect:
         return access_redirect
+
+    enforce_overdue_blocks()
 
     pending = Verification.query.filter_by(status="pending").order_by(
         Verification.created_at.desc()
@@ -126,17 +134,29 @@ def security_dashboard():
     if access_redirect:
         return access_redirect
 
+    enforce_overdue_blocks()
+
     result = None
     if request.method == "POST":
         return scan_member()
 
+    return _render_security_dashboard(result)
+
+
+def _render_security_dashboard(result):
     current_visits = LibraryVisit.query.filter_by(exit_at=None).order_by(
         LibraryVisit.entry_at.desc()
     ).all()
+    overdue_blocked = Member.query.filter_by(
+        is_active=False, block_reason=OVERDUE_BLOCK, role="member"
+    ).order_by(Member.first_name).all()
 
     return render_template(
         "verification/security_dashboard.html",
         current_visits=current_visits,
+        overdue_blocked=overdue_blocked,
+        format_member_number=format_member_number,
+        total_outstanding_fees=total_outstanding_fees,
         result=result,
     )
 
@@ -359,6 +379,8 @@ def scan_member():
     if request.method == "GET":
         return redirect(url_for("verification.security_dashboard"))
 
+    enforce_overdue_blocks()
+
     raw_barcode = request.form.get("barcode", "").strip()
     member = None
 
@@ -372,6 +394,15 @@ def scan_member():
             "heading": "Access denied",
             "name": "Unknown member",
             "message": "This barcode is not linked to a member account.",
+        }
+    elif member.block_reason == OVERDUE_BLOCK and not member.is_active:
+        result = {
+            "approved": False,
+            "heading": "Access denied - membership blocked",
+            "name": f"{member.first_name} {member.last_name}",
+            "message": "This member has outstanding book(s). Ask them to report to the admin desk to return the book(s) and pay any outstanding fees.",
+            "member": member,
+            "member_number": format_member_number(member.id),
         }
     elif not member.is_active or not member.id_verified or member.role != "member":
         result = {
@@ -408,15 +439,7 @@ def scan_member():
             "member_number": format_member_number(member.id),
         }
 
-    current_visits = LibraryVisit.query.filter_by(exit_at=None).order_by(
-        LibraryVisit.entry_at.desc()
-    ).all()
-
-    return render_template(
-        "verification/security_dashboard.html",
-        current_visits=current_visits,
-        result=result,
-    )
+    return _render_security_dashboard(result)
 
 
 @verification_bp.route("/pending-applications")
@@ -424,6 +447,8 @@ def pending_applications():
     access_redirect = require_staff_access()
     if access_redirect:
         return access_redirect
+
+    enforce_overdue_blocks()
 
     pending = Verification.query.filter_by(status="pending").order_by(
         Verification.created_at.desc()
@@ -506,6 +531,12 @@ def require_admin():
         return redirect(url_for("verification.dashboard"))
 
 
+def _after_member_action():
+    if request.form.get("return_to") == "books":
+        return redirect(url_for("books.books"))
+    return redirect(url_for("verification.dashboard"))
+
+
 @verification_bp.route("/members/<int:member_id>/block", methods=["POST"])
 def block_member(member_id):
     access_redirect = require_admin()
@@ -514,10 +545,12 @@ def block_member(member_id):
 
     member = Member.query.filter_by(id=member_id, role="member").first_or_404()
     member.is_active = False
+    if any(loan.closed_at is None and loan.is_overdue() for loan in member.loans):
+        member.block_reason = OVERDUE_BLOCK
     db.session.commit()
 
     flash(f"{member.first_name} {member.last_name} has been blocked.", "info")
-    return redirect(url_for("verification.dashboard"))
+    return _after_member_action()
 
 
 @verification_bp.route("/members/<int:member_id>/reactivate", methods=["POST"])
@@ -527,11 +560,20 @@ def reactivate_member(member_id):
         return access_redirect
 
     member = Member.query.filter_by(id=member_id, role="member").first_or_404()
+    if not can_lift_block(member):
+        flash(
+            f"{member.first_name} {member.last_name} still has overdue or lost books, or unpaid fees. "
+            "Return the books and record payment before lifting the block.",
+            "error",
+        )
+        return _after_member_action()
+
     member.is_active = True
+    member.block_reason = None
     db.session.commit()
 
     flash(f"{member.first_name} {member.last_name} has been reactivated.", "success")
-    return redirect(url_for("verification.dashboard"))
+    return _after_member_action()
 
 
 @verification_bp.route("/members/<int:member_id>/delete", methods=["POST"])
@@ -547,3 +589,4 @@ def delete_member(member_id):
 
     flash(f"{member_name} has been permanently deleted.", "info")
     return redirect(url_for("verification.dashboard"))
+

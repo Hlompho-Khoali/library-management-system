@@ -7,7 +7,7 @@ load_dotenv()
 from app.config import Config
 from app.extensions import db, migrate, mail
 from app.models import Region, Library, Member, Verification
-from app.routes import auth_bp, verification_bp
+from app.routes import auth_bp, verification_bp, books_bp
 from app.services.admin_service import ensure_default_admin, ensure_default_security_officer
 
 
@@ -39,5 +39,6 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(verification_bp)
+    app.register_blueprint(books_bp)
 
     return app
