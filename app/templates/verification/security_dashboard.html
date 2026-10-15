@@ -3,12 +3,19 @@
 {% block title %}Security Desk | Library Management System{% endblock %}
 
 {% block content %}
-<main class="security-dashboard">
+<main class="security-dashboard theatre-theme">
     <header class="security-header">
-        <div>
-            <p class="section-label">Security desk</p>
-            <h1>Library access control</h1>
-            <p>Scan a member barcode to record entry or exit.</p>
+        <div class="admin-brand">
+            <img
+                src="{{ url_for('static', filename='images/state-theatre-logo.jpeg') }}"
+                alt="South African State Theatre"
+                class="admin-brand-logo"
+            >
+            <div>
+                <p class="section-label">Security desk</p>
+                <h1>Library access control</h1>
+                <p>Scan a member barcode to record entry or exit.</p>
+            </div>
         </div>
         <a href="{{ url_for('auth.logout') }}" class="admin-logout">Logout</a>
     </header>
@@ -55,7 +62,7 @@
         </section>
     </section>
 
-    <section class="occupancy-panel">
+    <section class="occupancy-panel blocked-panel">
         <div class="panel-header">
             <div>
                 <p class="section-label">Blocked members</p>

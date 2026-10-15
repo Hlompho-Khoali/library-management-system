@@ -3,11 +3,18 @@
 {% block title %}Admin Dashboard | Library Management System{% endblock %}
 
 {% block content %}
-<main class="admin-dashboard">
+<main class="admin-dashboard theatre-theme">
     <header class="admin-topbar">
-        <div>
-            <p class="section-label">Administrator panel</p>
-            <h1>Library administration dashboard</h1>
+        <div class="admin-brand">
+            <img
+                src="{{ url_for('static', filename='images/state-theatre-logo.jpeg') }}"
+                alt="South African State Theatre"
+                class="admin-brand-logo"
+            >
+            <div>
+                <p class="section-label">Administrator panel</p>
+                <h1>Library administration dashboard</h1>
+            </div>
         </div>
         <nav class="admin-tabs">
             <a href="{{ url_for('verification.dashboard') }}" class="active">Overview</a>

@@ -12,10 +12,25 @@ html {
     scroll-behavior: smooth;
 }
 
+:root {
+    --font-body: "Inter", Arial, Helvetica, sans-serif;
+    --font-heading: "Montserrat", "Inter", Arial, Helvetica, sans-serif;
+}
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--font-body);
     color: #16231b;
     background: #f7faf8;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+.section-label,
+.admin-stat-card strong {
+    font-family: var(--font-heading);
 }
 
 a {
@@ -988,6 +1003,34 @@ textarea {
     color: #7f919f;
 
     font-size: 11px;
+}
+
+.footer-partner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    margin-bottom: 10px;
+    color: #aebbc5;
+    font-size: 11px;
+}
+
+.footer-partner:hover {
+    color: white;
+}
+
+.footer-partner-logo {
+    height: 64px;
+    width: auto;
+    border-radius: 4px;
+    background: white;
+    padding: 4px;
+}
+
+@media (max-width: 960px) {
+    .footer-partner {
+        align-items: flex-start;
+    }
 }
 
 .faq-page {
@@ -3296,3 +3339,605 @@ td {
 .member-tab { padding: 10px 18px; border: 1px solid #c9d6d0; border-radius: 8px; background: #fff; color: #0d2438; font-weight: 600; cursor: pointer; }
 .member-tab.active { background: #0d2438; color: #fff; border-color: #0d2438; }
 .member-pane[hidden] { display: none; }
+
+/* =========================================================
+   SOUTH AFRICAN STATE THEATRE THEME (admin pages)
+   ========================================================= */
+
+.theatre-theme {
+    --st-blue: #1f4f94;
+    --st-blue-dark: #14376b;
+    --st-gold: #f5b51b;
+    --st-red: #d3292a;
+    --st-green: #1f9a46;
+    --st-ink: #15171c;
+    --st-bronze: #a67c52;
+    --st-paper: #f7f4ee;
+
+    background: linear-gradient(180deg, var(--st-ink) 0%, #1b2233 265px, var(--st-paper) 265px, var(--st-paper) 100%);
+    position: relative;
+}
+
+.theatre-theme::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg,
+        var(--st-blue) 0 25%,
+        var(--st-gold) 25% 50%,
+        var(--st-red) 50% 75%,
+        var(--st-green) 75% 100%);
+}
+
+.theatre-theme .admin-brand {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.theatre-theme .admin-brand-logo {
+    height: 84px;
+    width: auto;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border-bottom: 3px solid var(--st-bronze);
+    background: white;
+}
+
+.theatre-theme .section-label {
+    color: var(--st-gold);
+}
+
+.theatre-theme .admin-tabs a {
+    color: #e8ebf2;
+}
+
+.theatre-theme .admin-tabs a:hover {
+    color: white;
+}
+
+.theatre-theme .admin-tabs a.active {
+    color: var(--st-gold);
+    border-bottom: 3px solid var(--st-gold);
+    border-radius: 6px 6px 0 0;
+}
+
+.theatre-theme .admin-logout {
+    border-color: var(--st-gold);
+    color: var(--st-gold);
+    background: transparent;
+}
+
+.theatre-theme .admin-logout:hover {
+    background: var(--st-gold);
+    color: var(--st-ink);
+}
+
+.theatre-theme .admin-stats {
+    gap: 18px;
+    border: none;
+}
+
+.theatre-theme .admin-stat-card {
+    padding: 18px 24px 20px;
+    border: none;
+    border-top: 5px solid var(--st-blue);
+    border-radius: 6px;
+    background: white;
+    box-shadow: 0 6px 18px rgba(21, 23, 28, 0.18);
+}
+
+.theatre-theme .admin-stat-card:nth-child(2) { border-top-color: var(--st-gold); }
+.theatre-theme .admin-stat-card:nth-child(3) { border-top-color: var(--st-red); }
+
+.theatre-theme .admin-stat-label {
+    color: #5b5f6b;
+}
+
+.theatre-theme .admin-stat-card strong {
+    color: var(--st-ink);
+}
+
+.theatre-theme .panel-header {
+    border-bottom: 2px solid var(--st-bronze);
+}
+
+.theatre-theme .panel-header h2,
+.theatre-theme .review-person h3,
+.theatre-theme .member-summary h3,
+.theatre-theme .member-row strong {
+    color: var(--st-ink);
+}
+
+.theatre-theme .panel-header span,
+.theatre-theme .admin-stat-label,
+.theatre-theme .review-person p,
+.theatre-theme .review-meta span,
+.theatre-theme .member-summary p,
+.theatre-theme .member-row p,
+.theatre-theme .verification-empty,
+.theatre-theme .empty-state,
+.theatre-theme .member-count {
+    color: #5b5f6b;
+}
+
+.theatre-theme .review-card,
+.theatre-theme .review-card:first-child,
+.theatre-theme .side-card,
+.theatre-theme .empty-state {
+    border-color: #ddd5c6;
+}
+
+.theatre-theme .avatar-circle {
+    background: linear-gradient(135deg, var(--st-blue-dark), var(--st-blue));
+}
+
+.theatre-theme .primary-btn {
+    background: var(--st-blue);
+}
+
+.theatre-theme .primary-btn:hover {
+    background: var(--st-blue-dark);
+}
+
+.theatre-theme .review-actions .primary-btn {
+    background: var(--st-green);
+}
+
+.theatre-theme .review-actions .primary-btn:hover {
+    background: #17803a;
+}
+
+.theatre-theme .decline-form .secondary-btn {
+    border-color: var(--st-red);
+    color: var(--st-red);
+}
+
+.theatre-theme .decline-form .secondary-btn:hover {
+    background: var(--st-red);
+    color: white;
+}
+
+.theatre-theme .lookup-form label,
+.theatre-theme .decline-reasons legend,
+.theatre-theme .decline-reason-option {
+    color: #3a3e49;
+}
+
+.theatre-theme .lookup-form input:focus,
+.theatre-theme .decline-form textarea:focus {
+    outline: 2px solid var(--st-gold);
+    border-color: var(--st-gold);
+}
+
+.theatre-theme .status-pill.eligible,
+.theatre-theme .tiny-badge {
+    background: #e3f4e8;
+    color: #167a37;
+}
+
+.theatre-theme .status-pill.not-eligible,
+.theatre-theme .tiny-badge.blocked {
+    background: #fbe5e5;
+    color: #b01f20;
+}
+
+.theatre-theme .member-action-button {
+    border-color: var(--st-blue);
+    color: var(--st-blue);
+}
+
+.theatre-theme .member-action-button:hover {
+    background: var(--st-blue);
+    color: white;
+}
+
+.theatre-theme .member-action-button.danger {
+    border-color: var(--st-red);
+    color: var(--st-red);
+}
+
+.theatre-theme .member-action-button.danger:hover {
+    background: var(--st-red);
+    color: white;
+}
+
+.theatre-theme .visit-report {
+    border-color: #ddd5c6;
+    border-left: 5px solid var(--st-gold);
+}
+
+.theatre-theme .visit-report summary {
+    color: var(--st-ink);
+}
+
+.theatre-theme .visit-report summary::after {
+    color: var(--st-bronze);
+}
+
+.theatre-theme .visit-report-download {
+    background: var(--st-blue);
+}
+
+.theatre-theme .visit-report-download:hover {
+    background: var(--st-blue-dark);
+}
+
+.theatre-theme .books-tab.active {
+    background: var(--st-blue);
+    border-color: var(--st-blue);
+}
+
+/* Security dashboard */
+
+.theatre-theme .security-header p:not(.section-label) {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.theatre-theme .security-header .admin-logout {
+    border-color: var(--st-gold);
+    color: var(--st-gold);
+    background: transparent;
+}
+
+.theatre-theme .security-header .admin-logout:hover {
+    background: var(--st-gold);
+    color: var(--st-ink);
+}
+
+.theatre-theme .scan-panel,
+.theatre-theme .occupancy-panel {
+    border: 1px solid #ddd5c6;
+    border-top: 5px solid var(--st-blue);
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 6px 18px rgba(21, 23, 28, 0.12);
+}
+
+.theatre-theme .occupancy-panel {
+    border-top-color: var(--st-green);
+}
+
+.theatre-theme .scan-panel .section-label,
+.theatre-theme .occupancy-panel .section-label {
+    color: var(--st-bronze);
+}
+
+.theatre-theme .scan-panel h2,
+.theatre-theme .occupancy-panel h2,
+.theatre-theme .occupancy-row strong {
+    color: var(--st-ink);
+}
+
+.theatre-theme .scan-instruction,
+.theatre-theme .occupancy-row p {
+    color: #5b5f6b;
+}
+
+.theatre-theme .scan-form label {
+    color: #3a3e49;
+}
+
+.theatre-theme .scan-form input {
+    border-color: var(--st-blue);
+    background: #fbfaf7;
+    color: var(--st-ink);
+}
+
+.theatre-theme .scan-form input:focus {
+    outline: 3px solid rgba(245, 181, 27, 0.35);
+    border-color: var(--st-gold);
+}
+
+.theatre-theme .occupancy-count {
+    background: var(--st-gold);
+    color: var(--st-ink);
+}
+
+.theatre-theme .occupancy-row {
+    border-top-color: #ece6d8;
+}
+
+.theatre-theme .scan-approved {
+    border-color: var(--st-green);
+    background: #e3f4e8;
+    color: #167a37;
+}
+
+.theatre-theme .scan-denied {
+    border-color: var(--st-red);
+    background: #fbe5e5;
+    color: #b01f20;
+}
+
+@media (max-width: 760px) {
+    .theatre-theme .admin-brand-logo {
+        height: 56px;
+    }
+
+    .theatre-theme .admin-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+.theatre-theme .blocked-panel {
+    max-width: 1180px;
+    margin: 22px auto 0;
+    padding: 14px 20px;
+    border-top-color: var(--st-red);
+}
+
+.theatre-theme .blocked-panel .panel-header {
+    margin-bottom: 6px;
+    padding-bottom: 8px;
+}
+
+.theatre-theme .blocked-panel h2 {
+    margin: 2px 0 0;
+    font-size: 16px;
+}
+
+.theatre-theme .blocked-panel .occupancy-count {
+    min-width: 32px;
+    height: 32px;
+    font-size: 15px;
+}
+
+.theatre-theme .blocked-panel .occupancy-row {
+    padding: 8px 0;
+}
+
+.theatre-theme .blocked-panel .verification-empty {
+    font-size: 13px;
+}
+
+.theatre-theme .book-policy {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: white;
+    font-weight: 500;
+}
+
+.theatre-theme .books-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.theatre-theme .books-tab {
+    --tab-color: var(--st-blue);
+
+    min-height: 54px;
+    padding: 0 16px;
+    border: 1px solid #ddd5c6;
+    border-bottom: 4px solid var(--tab-color);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--st-ink);
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(21, 23, 28, 0.1);
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.theatre-theme .books-tab[data-tab="catalogue"] { --tab-color: var(--st-gold); }
+.theatre-theme .books-tab[data-tab="add"] { --tab-color: var(--st-green); }
+.theatre-theme .books-tab[data-tab="owing"] { --tab-color: var(--st-red); }
+
+.theatre-theme .books-tab:hover {
+    transform: translateY(-2px);
+}
+
+.theatre-theme .books-tab.active {
+    border-color: var(--tab-color);
+    background: var(--tab-color);
+    color: white;
+}
+
+.theatre-theme .books-tab[data-tab="catalogue"].active {
+    color: var(--st-ink);
+}
+
+.theatre-theme .books-tab:focus-visible {
+    outline: 3px solid var(--st-gold);
+    outline-offset: 2px;
+}
+
+.theatre-theme .books-pane {
+    border-top-color: var(--st-blue);
+}
+
+.theatre-theme .books-pane[data-pane="catalogue"] { border-top-color: var(--st-gold); }
+.theatre-theme .books-pane[data-pane="add"] { border-top-color: var(--st-green); }
+.theatre-theme .books-pane[data-pane="owing"] { border-top-color: var(--st-red); }
+
+@media (max-width: 760px) {
+    .theatre-theme .books-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.theatre-theme .books-pane {
+    gap: 18px;
+    align-content: start;
+    padding: 24px 28px 28px;
+    border: 1px solid #ddd5c6;
+    border-top: 5px solid var(--st-blue);
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 6px 18px rgba(21, 23, 28, 0.12);
+    text-align: left;
+}
+
+.theatre-theme .books-pane[hidden] {
+    display: none;
+}
+
+.theatre-theme .books-pane .panel-header {
+    margin-bottom: 0;
+    justify-content: flex-start;
+    gap: 14px;
+}
+
+.theatre-theme .books-pane .panel-header + .lookup-form,
+.theatre-theme .books-pane .lookup-form + .panel-header,
+.theatre-theme .books-pane .member-row + .panel-header,
+.theatre-theme .books-pane .member-summary + .panel-header {
+    margin-top: 14px;
+}
+
+.theatre-theme .books-pane .lookup-form {
+    width: 100%;
+    max-width: 520px;
+}
+
+.theatre-theme .books-pane .lookup-form button {
+    justify-self: start;
+}
+
+.theatre-theme .books-pane .member-summary {
+    display: grid;
+    gap: 4px;
+    max-width: 520px;
+}
+
+.theatre-theme .books-pane .member-summary h3 {
+    margin-bottom: 6px;
+}
+
+.theatre-theme .books-pane .member-row {
+    padding: 14px 0;
+}
+
+.theatre-theme .books-pane .member-row p {
+    margin-top: 3px;
+}
+
+.theatre-theme .books-pane .side-card {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.theatre-theme .books-pane .status-pill {
+    justify-self: start;
+}
+
+.theatre-theme .books-table th,
+.theatre-theme .books-table td {
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+
+/* Member dashboard */
+
+.theatre-theme .member-dashboard-actions .secondary-btn {
+    border-color: var(--st-gold);
+    color: var(--st-gold);
+    background: transparent;
+}
+
+.theatre-theme .member-dashboard-actions .secondary-btn:hover {
+    background: var(--st-gold);
+    color: var(--st-ink);
+}
+
+.theatre-theme .member-dashboard-header p:not(.section-label) {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.theatre-theme .member-tab {
+    border-color: #ddd5c6;
+    color: var(--st-ink);
+}
+
+.theatre-theme .member-tab.active {
+    background: var(--st-blue);
+    border-color: var(--st-blue);
+    color: white;
+}
+
+.theatre-theme .member-welcome-card,
+.theatre-theme .member-details-card,
+.theatre-theme .member-card-panel {
+    border: 1px solid #ddd5c6;
+    border-top: 5px solid var(--st-blue);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(21, 23, 28, 0.12);
+}
+
+.theatre-theme .member-details-card {
+    border-top-color: var(--st-gold);
+}
+
+.theatre-theme .member-card-panel {
+    border-top-color: var(--st-green);
+}
+
+.theatre-theme .member-card-panel.child-card-panel {
+    border-top-color: var(--st-red);
+}
+
+.theatre-theme .member-welcome-card h2,
+.theatre-theme .member-details-card h2,
+.theatre-theme .member-card-panel h2,
+.theatre-theme .member-details-list dd,
+.theatre-theme .child-member-row strong {
+    color: var(--st-ink);
+}
+
+.theatre-theme .member-welcome-card .section-label,
+.theatre-theme .member-card-panel .section-label {
+    color: var(--st-bronze);
+}
+
+.theatre-theme .member-welcome-card > p:not(.section-label),
+.theatre-theme .member-details-list dt,
+.theatre-theme .rejection-reason-list,
+.theatre-theme .rejection-comment,
+.theatre-theme .reupload-message {
+    color: #5b5f6b;
+}
+
+.theatre-theme .member-details-list div {
+    border-bottom-color: #ece6d8;
+}
+
+.theatre-theme .status-pill.pending {
+    background: #fdf1d0;
+    color: #8a6100;
+}
+
+.theatre-theme .virtual-card-image {
+    box-shadow: 0 10px 24px rgba(21, 23, 28, 0.22);
+}
+
+.theatre-theme .card-download-link {
+    border-color: var(--st-blue);
+    color: var(--st-blue);
+}
+
+.theatre-theme .card-download-link:hover,
+.theatre-theme .card-download-link:focus-visible {
+    background: var(--st-blue);
+    color: white;
+}
+
+.theatre-theme .child-edit-details summary {
+    color: var(--st-blue);
+}
+
+.theatre-theme .books-table th {
+    color: var(--st-blue-dark);
+    border-bottom: 2px solid var(--st-bronze);
+}
+
+.theatre-theme .books-table td {
+    border-bottom-color: #ece6d8;
+}

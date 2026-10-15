@@ -3,12 +3,19 @@
 {% block title %}Member Dashboard | Library Management System{% endblock %}
 
 {% block content %}
-<main class="member-dashboard">
+<main class="member-dashboard theatre-theme">
     <header class="member-dashboard-header">
-        <div>
-            <p class="section-label">Member account</p>
-            <h1>Welcome, {{ member.first_name }}</h1>
-            <p>Your library membership is active and ready to use.</p>
+        <div class="admin-brand">
+            <img
+                src="{{ url_for('static', filename='images/state-theatre-logo.jpeg') }}"
+                alt="South African State Theatre"
+                class="admin-brand-logo"
+            >
+            <div>
+                <p class="section-label">Member account</p>
+                <h1>Welcome, {{ member.first_name }}</h1>
+                <p>Your library membership is active and ready to use.</p>
+            </div>
         </div>
         <div class="member-dashboard-actions">
             <a href="{{ url_for('auth.member_settings') }}" class="secondary-btn">Settings</a>
