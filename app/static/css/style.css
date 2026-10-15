@@ -1005,6 +1005,14 @@ textarea {
     font-size: 11px;
 }
 
+.footer-powered {
+    display: block;
+    margin-top: 4px;
+    color: #aebbc5;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
 .footer-partner {
     display: flex;
     flex-direction: column;
