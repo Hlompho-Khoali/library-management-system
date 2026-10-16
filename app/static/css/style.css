@@ -212,6 +212,18 @@ textarea {
     line-height: 1.15;
 }
 
+.home-logo-icon.home-logo-theatre {
+    width: auto;
+
+    height: 64px;
+
+    padding: 3px 6px;
+
+    border-radius: 4px;
+
+    background: white;
+}
+
 .home-logo-text strong {
     font-size: 17px;
 }
@@ -923,7 +935,7 @@ textarea {
 
     display: grid;
 
-    grid-template-columns: 1.5fr 1.6fr 1fr auto;
+    grid-template-columns: 1fr auto;
 
     align-items: center;
 
@@ -980,7 +992,7 @@ textarea {
 .footer-links {
     display: flex;
 
-    justify-content: center;
+    justify-content: flex-start;
 
     gap: 24px;
 }
@@ -1003,6 +1015,24 @@ textarea {
     color: #7f919f;
 
     font-size: 11px;
+}
+
+.footer-partner-contact {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-style: normal;
+    line-height: 1.5;
+    color: #aebbc5;
+}
+
+.footer-partner-contact a {
+    color: #aebbc5;
+}
+
+.footer-partner-contact a:hover {
+    color: white;
 }
 
 .footer-powered {

@@ -270,7 +270,7 @@ def generate_virtual_card(
 
     draw.text(
         (50, 25),
-        "TSHWANE LIBRARY",
+        "STATE THEATRE",
         font=title_font,
         fill="white"
     )
@@ -282,32 +282,35 @@ def generate_virtual_card(
         fill=(220, 190, 80)
     )
 
-    # City of Tshwane logo badge
+    # South African State Theatre logo badge
     logo_path = os.path.join(
         STATIC_DIR,
         "images",
-        "tshwane icon.jpg"
+        "state-theatre-logo.jpeg"
     )
-    badge_size = 96
-    badge_left = width - badge_size - 34
-    badge_top = 20
-    badge = Image.new("RGB", (badge_size, badge_size), "white")
-    badge_mask = Image.new("L", (badge_size, badge_size), 0)
-    ImageDraw.Draw(badge_mask).ellipse(
-        [0, 0, badge_size - 1, badge_size - 1],
+    badge_width = 92
+    badge_height = 108
+    badge_left = width - badge_width - 34
+    badge_top = (135 - badge_height) // 2
+    badge = Image.new("RGB", (badge_width, badge_height), "white")
+    badge_mask = Image.new("L", (badge_width, badge_height), 0)
+    ImageDraw.Draw(badge_mask).rounded_rectangle(
+        [0, 0, badge_width - 1, badge_height - 1],
+        radius=10,
         fill=255
     )
 
     if os.path.exists(logo_path):
         logo = Image.open(logo_path).convert("RGB")
-        logo.thumbnail((badge_size - 12, badge_size - 12), Image.Resampling.LANCZOS)
-        logo_left = (badge_size - logo.width) // 2
-        logo_top = (badge_size - logo.height) // 2
+        logo.thumbnail((badge_width - 8, badge_height - 8), Image.Resampling.LANCZOS)
+        logo_left = (badge_width - logo.width) // 2
+        logo_top = (badge_height - logo.height) // 2
         badge.paste(logo, (logo_left, logo_top))
 
     image.paste(badge, (badge_left, badge_top), badge_mask)
-    draw.ellipse(
-        [badge_left, badge_top, badge_left + badge_size - 1, badge_top + badge_size - 1],
+    draw.rounded_rectangle(
+        [badge_left, badge_top, badge_left + badge_width - 1, badge_top + badge_height - 1],
+        radius=10,
         outline=(220, 190, 80),
         width=3
     )
